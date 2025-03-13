@@ -1,13 +1,14 @@
 interface User {
   id: number;
-  firstName: string;
-  lastName: string;
+  first_name: string;
+  last_name: string;
   email: string;
+  phone_number: string;
   birthday: Date;
-  idNumber: string;
+  id_number: string;
   gender: "Male" | "Female" | "Other" | "Prefer not to say";
-  passwordHash: string;
-  createdAt: Date;
+  password_hash: string;
+  created_at: Date;
 }
 
 export default User;

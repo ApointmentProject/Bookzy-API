@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
-import EncryptedData from "../intefaces/EncryptedData";
+import dotenv from "dotenv";
+dotenv.config();
 
 const SECRET_KEY = Buffer.from(process.env.SECRET_KEY || "", "hex");
 const ALGORITHM = "aes-256-gcm";
@@ -10,8 +11,7 @@ const IV_LENGTH = 16;
 export async function hashPassword(password: string): Promise<string> {
   const saltRounds = 10;
   const salt = await bcrypt.genSalt(saltRounds);
-  const hashedPassword = await bcrypt.hash(password, salt);
-  return hashedPassword;
+  return await bcrypt.hash(password, salt);
 }
 
 export async function comparePassword(
@@ -22,29 +22,34 @@ export async function comparePassword(
 }
 
 // Regular data encryptation ------------------------------------------------------
-export function encryptData<T>(data: T): EncryptedData {
+export function encryptData(data: string): string {
   const iv = crypto.randomBytes(IV_LENGTH);
   const cipher = crypto.createCipheriv(ALGORITHM, SECRET_KEY, iv);
 
-  const jsonData = JSON.stringify(data);
-  let encrypted = cipher.update(jsonData, "utf8", "hex");
+  let encrypted = cipher.update(data, "utf8", "hex");
   encrypted += cipher.final("hex");
 
   const authTag = cipher.getAuthTag().toString("hex");
 
-  return { encryptedData: encrypted, iv: iv.toString("hex"), authTag };
+  return `${iv.toString("hex")}:${authTag}:${encrypted}`;
 }
 
-export function decryptData<T>(encrypted: EncryptedData): T {
+export function decryptData(encrypted: string): string {
+  const [iv, authTag, encryptedData] = encrypted.split(":");
+
+  if (!iv || !authTag || !encryptedData) {
+    throw new Error("Invalid encrypted string format");
+  }
+
   const decipher = crypto.createDecipheriv(
     ALGORITHM,
     SECRET_KEY,
-    Buffer.from(encrypted.iv, "hex"),
+    Buffer.from(iv, "hex"),
   );
-  decipher.setAuthTag(Buffer.from(encrypted.authTag, "hex"));
+  decipher.setAuthTag(Buffer.from(authTag, "hex"));
 
-  let decrypted = decipher.update(encrypted.encryptedData, "hex", "utf8");
+  let decrypted = decipher.update(encryptedData, "hex", "utf8");
   decrypted += decipher.final("utf8");
 
-  return JSON.parse(decrypted) as T;
+  return decrypted;
 }
