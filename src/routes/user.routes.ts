@@ -1,13 +1,14 @@
 import { Router } from "express";
-import { createUser, getUserById, checkIfUserExists} from "../controllers/user.controller";
+import { createUser, getUserByEmail, checkIfUserExists, validateUserPassword} from "../controllers/user.controller";
 
 const router = Router();
 
 // Posts
 router.post("/", createUser);
+router.post("/checkUser", checkIfUserExists);
+router.post("/validatePassword", validateUserPassword);
 
 // Gets
-router.get("/:id", getUserById);
-router.get("/checkUser/:email", checkIfUserExists);
+router.get("/:email", getUserByEmail);
 
 export default router;
