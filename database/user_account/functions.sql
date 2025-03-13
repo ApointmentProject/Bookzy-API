@@ -44,3 +44,16 @@ BEGIN
     VALUES (p_first_name, p_last_name, p_email, p_phone_number, p_birthday, p_id_number, p_gender, p_password_hash);
 END;
 $$;
+
+CREATE OR REPLACE FUNCTION check_if_user_exists(p_email VARCHAR(255))
+RETURNS BOOLEAN AS $$
+DECLARE
+email_exists BOOLEAN;
+BEGIN
+SELECT EXISTS (
+    SELECT 1 FROM user_account WHERE email = p_email
+) INTO email_exists;
+
+RETURN email_exists;
+END;
+$$ LANGUAGE plpgsql;
