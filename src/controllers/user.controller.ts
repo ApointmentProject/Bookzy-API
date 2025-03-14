@@ -112,11 +112,13 @@ export const validateUserPassword = async (
         }
 
         const encryptedEmail = encryptData(email);
+        console.log("Email encriptado:", encryptedEmail);
         const passwordStoraged = await db.oneOrNone<{get_user_password: string}>(
             "SELECT * FROM get_user_password($1)", [encryptedEmail]);
 
-        if (!passwordStoraged) {
-            res.status(404).json({ error: "There was an error with this email" });
+        console.log(passwordStoraged);
+        if (!passwordStoraged?.get_user_password) {
+            res.status(404).json({ error: "The email entered does not exist" });
             return;
         }
 
