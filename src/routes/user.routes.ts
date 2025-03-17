@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createUser, getUserByEmail, checkIfUserExists, validateUserPassword} from "../controllers/user.controller";
+import { createUser, getUserByEmail, checkIfUserExists, validateUserPassword, deleteUserData} from "../controllers/user.controller";
 
 const router = Router();
 
@@ -10,5 +10,6 @@ router.post("/validatePassword", validateUserPassword);
 
 // Gets
 router.get("/:email", getUserByEmail);
+router.get("/delete-user-data/:user_id", deleteUserData);
 
 export default router;

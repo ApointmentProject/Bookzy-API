@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import db from "../config/database";
 import User from "../models/user.model";
-import {encryptUser, decryptUser} from "../services/user.service";
-import {encryptData, comparePassword} from "../utils/cypher";
+import { encryptUser, decryptUser } from "../services/user.service";
+import { encryptData, comparePassword } from "../utils/cypher";
 
 export const createUser = async (
     req: Request, res: Response
@@ -83,7 +83,7 @@ export const checkIfUserExists = async (
         // As the email in the db is encrypted, we need to encrypt the email to do the comparison
         const encryptedEmail = encryptData(email);
 
-        const userExists  = await db.oneOrNone<{ check_if_user_exists: boolean }>(
+        const userExists = await db.oneOrNone<{ check_if_user_exists: boolean }>(
             "SELECT check_if_user_exists($1) AS check_if_user_exists",
             [encryptedEmail]
         );
@@ -113,7 +113,7 @@ export const validateUserPassword = async (
 
         const encryptedEmail = encryptData(email);
         console.log("Email encriptado:", encryptedEmail);
-        const passwordStoraged = await db.oneOrNone<{get_user_password: string}>(
+        const passwordStoraged = await db.oneOrNone<{ get_user_password: string }>(
             "SELECT * FROM get_user_password($1)", [encryptedEmail]);
 
         console.log(passwordStoraged);
@@ -129,3 +129,35 @@ export const validateUserPassword = async (
         res.status(500).json({ error: "Internal Server Error" });
     }
 }
+
+export const deleteUserData = async (req: Request, res: Response): Promise<void> => {
+    try {
+        // Se extrae el user_id de los parámetros de la ruta y se convierte a número.
+        const userId = Number(req.params.user_id);
+
+        if (!userId || isNaN(userId)) {
+            res.status(400).json({ error: "Invalid user id" });
+            return;
+        }
+
+        // Se intenta eliminar el usuario y se devuelve el usuario eliminado para confirmar la acción.
+        const deletedUser: User | null = await db.oneOrNone(
+            "DELETE FROM user_account WHERE id = $1 RETURNING *",
+            [userId]
+        );
+
+        if (!deletedUser) {
+            res.status(404).json({ message: "User not found" });
+            return;
+        }
+
+        res.status(200).json({
+            status: "success",
+            confirmation: `La solicitud de eliminación para el usuario ${userId} se ha procesado correctamente.`,
+            deletedUser,
+        });
+    } catch (error) {
+        console.error("Database Error:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};

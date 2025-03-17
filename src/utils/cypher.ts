@@ -5,7 +5,7 @@ dotenv.config();
 
 const SECRET_KEY = Buffer.from(process.env.SECRET_KEY || "", "hex");
 const IV = Buffer.from(process.env.IV || "", "hex");
-const ALGORITHM = "aes-256-cbc";
+const ALGORITHM = process.env.ALGORITHM || ""
 
 // Passwords (Hash and Salt algorithms) ------------------------------------------------------
 export async function hashPassword(password: string): Promise<string> {
@@ -13,6 +13,9 @@ export async function hashPassword(password: string): Promise<string> {
   const salt = await bcrypt.genSalt(saltRounds);
   return await bcrypt.hash(password, salt);
 }
+
+// hola123
+// 
 
 export async function comparePassword(
   password: string,
