@@ -8,6 +8,8 @@ interface User {
   id_number: string;
   gender: "Male" | "Female" | "Other" | "Prefer not to say";
   password_hash: string;
+  uid?: string;
+  profile_pic?: string;
   created_at: Date;
 }
 

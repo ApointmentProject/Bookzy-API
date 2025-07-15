@@ -46,25 +46,43 @@ export const getUserByEmail = async (
         const email = req.params.email;
 
         if (!email) {
-            res.status(400).json({ error: "Invalid user email" });
+            res.status(400).json({ 
+                success: false,
+                error: "Email es requerido" 
+            });
             return;
         }
 
-        // As the email in the db is encrypted, we need to encrypt the email to do the comparison
         const encryptedEmail = encryptData(email);
-
         const user: User | null = await db.oneOrNone("SELECT * FROM get_user_by_email($1)", [encryptedEmail]);
+        
         if (!user) {
-            res.status(404).json({ message: "User not found" });
+            res.status(404).json({ 
+                success: false,
+                message: "Usuario no encontrado" 
+            });
             return;
         }
 
         const decryptedUser: User = decryptUser(user);
-        res.json(decryptedUser);
+        
+        res.status(200).json({
+            success: true,
+            data: {
+                uid: decryptedUser.uid || '',
+                profilePic: decryptedUser.profile_pic || '',
+                email: email,
+                firstName: decryptedUser.first_name,
+                lastName: decryptedUser.last_name,
+            }
+        });
 
     } catch (error) {
-        console.log("Database Error:", error);
-        res.status(500).json({ error: "Internal Server Error" });
+        console.error("Error en getUserByEmail:", error);
+        res.status(500).json({ 
+            success: false,
+            error: "Error interno del servidor" 
+        });
     }
 }
 
@@ -160,4 +178,86 @@ export const deleteUserData = async (req: Request, res: Response): Promise<void>
         console.error("Database Error:", error);
         res.status(500).json({ error: "Internal Server Error" });
     }
+};
+
+
+export const linkFirebaseUid = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { email, uid, profilePic } = req.body;
+
+    if (!email || !uid) {
+      res.status(400).json({ 
+        success: false,
+        error: "Email y UID son obligatorios" 
+      });
+      return;
+    }
+
+    const encryptedEmail = encryptData(email);
+
+    // Verificar si el usuario existe
+    const userExists = await db.oneOrNone(
+      "SELECT id, uid FROM user_account WHERE email = $1",
+      [encryptedEmail]
+    );
+
+    if (!userExists) {
+      res.status(404).json({ 
+        success: false,
+        error: "Usuario no encontrado" 
+      });
+      return;
+    }
+
+    // Verificar si el UID ya está en uso por otro usuario
+    const uidExists = await db.oneOrNone(
+      "SELECT id FROM user_account WHERE uid = $1 AND email != $2",
+      [uid, encryptedEmail]
+    );
+
+    if (uidExists) {
+      res.status(409).json({ 
+        success: false,
+        error: "Este UID de Firebase ya está vinculado a otro usuario" 
+      });
+      return;
+    }
+
+    // Actualizar el usuario con el UID de Firebase
+    const updateResult = await db.result(
+      "UPDATE user_account SET uid = $1, profile_pic = $2 WHERE email = $3",
+      [uid, profilePic || null, encryptedEmail]
+    );
+
+    if (updateResult.rowCount === 0) {
+      res.status(500).json({
+        success: false,
+        error: "No se pudo actualizar el usuario"
+      });
+      return;
+    }
+
+    // Obtener los datos actualizados
+    const updatedUser = await db.oneOrNone(
+      "SELECT uid, profile_pic FROM user_account WHERE email = $1",
+      [encryptedEmail]
+    );
+
+    res.status(200).json({ 
+      success: true,
+      message: "Firebase UID vinculado exitosamente",
+      data: {
+        uid: updatedUser?.uid || '',
+        profilePic: updatedUser?.profile_pic || '',
+        email: email
+      }
+    });
+
+  } catch (error) {
+    console.error("Error al vincular UID:", error);
+    res.status(500).json({ 
+      success: false,
+      error: "Error interno del servidor" 
+    });
+  }
 };

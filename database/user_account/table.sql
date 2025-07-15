@@ -11,3 +11,7 @@ CREATE TABLE user_account (
     uid TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+ALTER TABLE user_account
+ADD COLUMN profile_pic TEXT;
+
