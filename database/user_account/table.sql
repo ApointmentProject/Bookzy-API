@@ -1,3 +1,5 @@
+
+-- 1. Tablas de Usuario
 CREATE TABLE user_account (
     id SERIAL PRIMARY KEY,
     first_name VARCHAR(50) NOT NULL,
@@ -9,9 +11,10 @@ CREATE TABLE user_account (
     gender VARCHAR(20) CHECK (gender IN ('Male', 'Female', 'Other', 'Prefer not to say')) NOT NULL,
     password_hash TEXT NOT NULL,
     uid TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    profile_pic TEXT
 );
 
 ALTER TABLE user_account
-ADD COLUMN profile_pic TEXT;
-
+ADD COLUMN user_type VARCHAR(20) DEFAULT 'customer'
+CHECK (user_type IN ('customer', 'business_owner', 'admin')) NOT NULL;

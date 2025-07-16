@@ -71,3 +71,5 @@ BEGIN
     RETURN user_password;
 END;
 $$ LANGUAGE plpgsql;
+
+CREATE INDEX IF NOT EXISTS idx_user_email ON user_account(email);
