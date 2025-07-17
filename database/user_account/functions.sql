@@ -1,27 +1,31 @@
-CREATE OR REPLACE FUNCTION get_user_by_email(user_email VARCHAR(255))
+CREATE OR REPLACE FUNCTION get_user_by_email(user_email TEXT)
 RETURNS TABLE (
     id INT,
     first_name VARCHAR(50),
     last_name VARCHAR(50),
-    email VARCHAR(255),
-    phone_number TEXT,
+    email TEXT,  -- Cambiado a TEXT para coincidir con la tabla
+    phone_number TEXT,  -- Cambiado a TEXT para coincidir con la tabla
     birthday DATE,
     id_number VARCHAR(50),
     gender VARCHAR(20),
-    created_at TIMESTAMP
+    created_at TIMESTAMP,
+    uid TEXT,  -- Agregado el campo uid
+    profile_pic TEXT  -- Agregado el campo profile_pic
 ) AS $$
 BEGIN
-    RETURN QUERY 
-    SELECT 
-        u.id, 
-        u.first_name, 
-        u.last_name, 
-        u.email, 
-        u.phone_number, 
-        u.birthday, 
-        u.id_number, 
-        u.gender, 
-        u.created_at
+    RETURN QUERY
+    SELECT
+        u.id,
+        u.first_name,
+        u.last_name,
+        u.email,
+        u.phone_number,
+        u.birthday,
+        u.id_number,
+        u.gender,
+        u.created_at,
+        u.uid,
+        u.profile_pic
     FROM user_account u
     WHERE u.email = user_email;
 END;
@@ -30,13 +34,13 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE PROCEDURE create_user(
     p_first_name VARCHAR(50),
     p_last_name VARCHAR(50),
-    p_email VARCHAR(255),
-    p_phone_number TEXT,
+    p_email TEXT,  -- Cambiado a TEXT
+    p_phone_number TEXT,  -- Cambiado a TEXT
     p_birthday DATE,
     p_id_number VARCHAR(50),
     p_gender VARCHAR(20),
     p_password_hash TEXT
-) 
+)
 LANGUAGE plpgsql
 AS $$
 BEGIN
@@ -45,7 +49,7 @@ BEGIN
 END;
 $$;
 
-CREATE OR REPLACE FUNCTION check_if_user_exists(p_email VARCHAR(255))
+CREATE OR REPLACE FUNCTION check_if_user_exists(p_email TEXT)  -- Cambiado a TEXT
 RETURNS BOOLEAN AS $$
 DECLARE
     email_exists BOOLEAN;
@@ -58,12 +62,15 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION get_user_password(user_email VARCHAR(255))
+-- 4. Actualizar la función get_user_password
+DROP FUNCTION IF EXISTS get_user_password;
+
+CREATE OR REPLACE FUNCTION get_user_password(user_email TEXT)  -- Cambiado a TEXT
 RETURNS TEXT AS $$
 DECLARE
     user_password TEXT;
 BEGIN
-    SELECT password_hash 
+    SELECT password_hash
     INTO user_password
     FROM user_account
     WHERE email = user_email;
@@ -72,4 +79,5 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE INDEX IF NOT EXISTS idx_user_email ON user_account(email);
+
+

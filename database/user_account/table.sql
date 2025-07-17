@@ -14,3 +14,7 @@ CREATE TABLE user_account (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     profile_pic TEXT
 );
+
+ALTER TABLE user_account
+    ALTER COLUMN email TYPE TEXT,
+    ALTER COLUMN phone_number TYPE TEXT;
