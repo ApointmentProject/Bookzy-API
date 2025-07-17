@@ -6,19 +6,18 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const cors_1 = __importDefault(require("cors"));
-const test_1 = __importDefault(require("./src/routes/test"));
+const user_routes_1 = __importDefault(require("./src/routes/user.routes"));
+const business_routes_1 = __importDefault(require("./src/routes/business.routes"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const port = process.env.PORT || 8000;
 app.use((0, cors_1.default)());
 app.use(express_1.default.json());
-// Ruta principal
 app.get("/", (req, res) => {
-    res.send("Welcome to Express & TypeScript Server");
+    res.send("Welcome to the Bookzy API");
 });
-// Usar rutas
-app.use("/api/test", test_1.default);
-// Iniciar servidor
+app.use("/api/users", user_routes_1.default);
+app.use("/api/businesses", business_routes_1.default);
 app.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}`);
 });

@@ -14,7 +14,3 @@ CREATE TABLE user_account (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     profile_pic TEXT
 );
-
-ALTER TABLE user_account
-ADD COLUMN user_type VARCHAR(20) DEFAULT 'customer'
-CHECK (user_type IN ('customer', 'business_owner', 'admin')) NOT NULL;

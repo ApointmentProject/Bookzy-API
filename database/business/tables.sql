@@ -4,30 +4,24 @@ CREATE TABLE business_categories (
     name VARCHAR(100) NOT NULL UNIQUE,
     description TEXT,
     icon VARCHAR(255),
-    is_active BOOLEAN DEFAULT true,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE businesses (
     id SERIAL PRIMARY KEY,
     business_name VARCHAR(255) NOT NULL,
-    business_slug VARCHAR(255) UNIQUE NOT NULL,
+    business_slug VARCHAR(255),
     category_id INTEGER REFERENCES business_categories(id),
 
     -- Información de contacto
     phone_number VARCHAR(20) NOT NULL,
     email VARCHAR(255) NOT NULL,
-    website VARCHAR(255),
 
     -- Ubicación
     address TEXT NOT NULL,
     province VARCHAR(100) NOT NULL,
     canton VARCHAR(100) NOT NULL,
     district VARCHAR(100) NOT NULL,
-
-    -- Coordenadas (útil para mapas en el futuro)
-    latitude DECIMAL(10, 8),
-    longitude DECIMAL(11, 8),
 
     -- Información del negocio
     description TEXT,
@@ -46,20 +40,11 @@ CREATE TABLE user_business (
     business_id INTEGER REFERENCES businesses(id) ON DELETE CASCADE,
     role VARCHAR(50) NOT NULL CHECK (role IN ('owner', 'manager', 'employee', 'receptionist')),
 
-    -- Permisos específicos para este usuario en este negocio
-    can_manage_appointments BOOLEAN DEFAULT false,
-    can_manage_services BOOLEAN DEFAULT false,
-    can_manage_employees BOOLEAN DEFAULT false,
-    can_view_reports BOOLEAN DEFAULT false,
-    can_manage_settings BOOLEAN DEFAULT false,
-
     -- Tracking
     is_active BOOLEAN DEFAULT true,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    created_by INTEGER REFERENCES user_account(id),
+    created_by INTEGER REFERENCES user_account(id)
 
-    -- Un usuario no puede tener múltiples roles en el mismo negocio
-    UNIQUE(user_id, business_id)
 );
 
 -- 4. REDES SOCIALES (mantenemos tu estructura)
@@ -70,11 +55,12 @@ CREATE TABLE business_social_networks (
     -- URLs de redes sociales
     instagram_url VARCHAR(255),
     facebook_url VARCHAR(255),
-    whatsapp_number VARCHAR(20), -- Cambié a number para ser más específico
+    whatsapp_url VARCHAR(20),
     tiktok_url VARCHAR(255),
     youtube_url VARCHAR(255),
     twitter_url VARCHAR(255),
     linkedin_url VARCHAR(255),
+    website_url VARCHAR(255),
 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -90,3 +76,16 @@ CREATE TABLE role_permissions (
     description TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+
+ALTER TABLE businesses
+    ALTER COLUMN phone_number TYPE VARCHAR(255),
+    ALTER COLUMN email TYPE VARCHAR(255),
+    ALTER COLUMN address TYPE VARCHAR(500);
+
+ALTER TABLE user_account
+    ALTER COLUMN email TYPE VARCHAR(255),
+    ALTER COLUMN phone_number TYPE VARCHAR(255);
+
+ALTER TABLE business_social_networks
+    ALTER COLUMN whatsapp_url TYPE VARCHAR(255);
